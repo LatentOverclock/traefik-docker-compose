@@ -21,9 +21,14 @@ chmod 600 letsencrypt/acme.json
 
 Set your ACME email in `traefik/traefik.yml`.
 
+Create `.env` from `.env.example` to define dashboard host + basic-auth users.
+
 ## Run
 
 ```bash
+cp .env.example .env
+# edit .env values
+
 docker compose up -d
 ```
 
