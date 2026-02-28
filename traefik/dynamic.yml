@@ -1,0 +1,16 @@
+http:
+  routers:
+    whoami-router:
+      # Generic catch-all HTTPS router.
+      # For stricter production setups, replace with explicit Host(...) rules.
+      rule: HostRegexp(`^.+$`)
+      service: whoami-service
+      entryPoints:
+        - websecure
+      tls: {}
+
+  services:
+    whoami-service:
+      loadBalancer:
+        servers:
+          - url: "http://whoami:80"
