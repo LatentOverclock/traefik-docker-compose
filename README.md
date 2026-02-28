@@ -18,6 +18,23 @@ Production-leaning Traefik baseline with automatic HTTPS (Let's Encrypt) and a s
 3. Set a real ACME email in `traefik/traefik.yml`.
 4. Create DNS `A` records at your DNS provider so your domain points to your server.
 
+## Local production override template (recommended)
+
+Keep the repo generic and put machine/domain-specific settings in local files:
+
+```bash
+cp docker-compose.override.example.yml docker-compose.override.yml
+cp traefik/traefik.local.example.yml traefik/traefik.local.yml
+cp traefik/dynamic.local.example.yml traefik/dynamic.local.yml
+```
+
+Then edit:
+
+- `traefik/traefik.local.yml` → set your ACME email
+- `traefik/dynamic.local.yml` → set your production domain rules
+
+Tip: keep these local files untracked (e.g. via `.git/info/exclude`).
+
 ## Run
 
 ```bash
