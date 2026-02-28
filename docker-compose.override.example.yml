@@ -1,5 +1,0 @@
-services:
-  traefik:
-    volumes:
-      - ./traefik/traefik.local.yml:/etc/traefik/traefik.yml:ro
-      - ./traefik/dynamic.local.yml:/etc/traefik/dynamic.yml:ro

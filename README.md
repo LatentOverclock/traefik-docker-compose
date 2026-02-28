@@ -1,55 +1,48 @@
 # Traefik Docker Compose
 
-Production-leaning Traefik baseline with automatic HTTPS (Let's Encrypt) and a sample backend (`whoami`).
+Generic Traefik reverse-proxy base for multi-app deployments.
 
-## What is configured
+## What this base does
 
-- Traefik v3
-- HTTP (`:80`) → automatic redirect to HTTPS (`:443`)
-- Let's Encrypt certificates via ACME HTTP challenge
-- Generic catch-all HTTPS route (`HostRegexp`) for quick start
-- Easy to replace with explicit host rules for production
-- ACME resolver scaffold is included but intentionally not bound to a specific domain by default
+- Runs Traefik v3
+- Redirects HTTP (`:80`) to HTTPS (`:443`)
+- Uses Let's Encrypt ACME (HTTP challenge)
+- Reads app routes from **Docker labels**
+- Uses shared external Docker network: `edge-proxy`
 
-## Before first run
-
-1. For production TLS, replace the catch-all router rule in `traefik/dynamic.yml` with explicit host rules.
-2. In that router, set `tls.certResolver: letsencrypt`.
-3. Set a real ACME email in `traefik/traefik.yml`.
-4. Create DNS `A` records at your DNS provider so your domain points to your server.
-
-## Local production override template (recommended)
-
-Keep the repo generic and put machine/domain-specific settings in local files:
+## One-time setup
 
 ```bash
-cp docker-compose.override.example.yml docker-compose.override.yml
-cp traefik/traefik.local.example.yml traefik/traefik.local.yml
-cp traefik/dynamic.local.example.yml traefik/dynamic.local.yml
+docker network create edge-proxy || true
+mkdir -p letsencrypt
+touch letsencrypt/acme.json
+chmod 600 letsencrypt/acme.json
 ```
 
-Then edit:
-
-- `traefik/traefik.local.yml` → set your ACME email
-- `traefik/dynamic.local.yml` → set your production domain rules
-
-Tip: keep these local files untracked (e.g. via `.git/info/exclude`).
+Set your ACME email in `traefik/traefik.yml`.
 
 ## Run
 
 ```bash
-mkdir -p letsencrypt
-touch letsencrypt/acme.json
-chmod 600 letsencrypt/acme.json
-
 docker compose up -d
 ```
 
-## Test
+## How apps integrate (from their own repo)
 
-After DNS propagates, open your configured domain over HTTPS.
+1. Join external network `edge-proxy`
+2. Add Traefik labels on the app service, for example:
+
+```yaml
+labels:
+  - "traefik.enable=true"
+  - "traefik.docker.network=edge-proxy"
+  - "traefik.http.routers.myapp.rule=Host(`example.com`)"
+  - "traefik.http.routers.myapp.entrypoints=websecure"
+  - "traefik.http.routers.myapp.tls.certresolver=letsencrypt"
+  - "traefik.http.services.myapp.loadbalancer.server.port=80"
+```
 
 ## Notes
 
-- Dashboard API is enabled internally, but not publicly routed in `dynamic.yml`.
-- This setup uses file-based routing (works around Docker API provider mismatch on this host).
+- Keep this repo domain-agnostic.
+- Domain-specific routing should live in each app's compose labels.
