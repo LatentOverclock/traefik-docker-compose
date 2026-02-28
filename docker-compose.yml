@@ -24,4 +24,4 @@ services:
 
 networks:
   edge-proxy:
-    external: true
+    name: edge-proxy

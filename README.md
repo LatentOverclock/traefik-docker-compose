@@ -8,12 +8,11 @@ Generic Traefik reverse-proxy base for multi-app deployments.
 - Redirects HTTP (`:80`) to HTTPS (`:443`)
 - Uses Let's Encrypt ACME (HTTP challenge)
 - Reads app routes from **Docker labels**
-- Uses shared external Docker network: `edge-proxy`
+- Creates and owns shared Docker network `edge-proxy`
 
 ## One-time setup
 
 ```bash
-docker network create edge-proxy || true
 mkdir -p letsencrypt
 touch letsencrypt/acme.json
 chmod 600 letsencrypt/acme.json
@@ -34,7 +33,7 @@ docker compose up -d
 
 ## How apps integrate (from their own repo)
 
-1. Join external network `edge-proxy`
+1. Join external network `edge-proxy` (created by this Traefik stack)
 2. Add Traefik labels on the app service, for example:
 
 ```yaml
